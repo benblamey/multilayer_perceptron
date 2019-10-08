@@ -7,7 +7,6 @@ TRAINING_IMAGES = 'mnist/t10k-images-idx3-ubyte'
 TEST_IMAGES = 'mnist/train-images-idx3-ubyte'
 TEST_LABELS = 'mnist/train-labels-idx1-ubyte'
 
-
 # See: http://yann.lecun.com/exdb/mnist/
 
 def _read_labels(filename):
@@ -42,7 +41,7 @@ def _read_images(filename):
                                         offset=0),
                             (num_images, num_rows, num_cols))
 
-        return images
+        return images / 255
 
 
 def get_training_labels():
