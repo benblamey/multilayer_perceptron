@@ -2,49 +2,45 @@ import struct
 import numpy as np
 
 TRAINING_LABELS = 'mnist/t10k-labels-idx1-ubyte'
-TEST_LABELS = 'mnist/train-labels-idx1-ubyte'
+TRAINING_IMAGES = 'mnist/t10k-images-idx3-ubyte'
 
-TEST_IMAGES = 'mnist/t10k-images-idx3-ubyte'
-TRAINING_IMAGES = 'mnist/train-images-idx3-ubyte'
+TEST_IMAGES = 'mnist/train-images-idx3-ubyte'
+TEST_LABELS = 'mnist/train-labels-idx1-ubyte'
 
 
 # See: http://yann.lecun.com/exdb/mnist/
 
-
 def _read_labels(filename):
-    with open(filename, "rb") as f:
+    with open(filename, "rb", 1024) as f:
         magic = struct.unpack(">I", f.read(4))[0]
         assert (magic == 0x00000801)
+
         num_items = struct.unpack(">I", f.read(4))[0]
         print(f'There are {num_items} labels')
 
-        labels = np.empty((num_items))
+        labels = np.fromfile(f, dtype=np.dtype('u1'), count=num_items, offset=0)
 
-        for i in range(num_items):
-            labels[i] = (f.read(1)[0])
-
-        return labels
+    return labels
 
 
 def _read_images(filename):
     with open(filename, "rb") as f:
         magic = struct.unpack(">I", f.read(4))[0]
         assert (magic == 0x00000803)
-        num_items = struct.unpack(">I", f.read(4))[0]
-        print(f'There are {num_items} images')
+
+        num_images = struct.unpack(">I", f.read(4))[0]
+        print(f'There are {num_images} images')
 
         num_rows = struct.unpack(">I", f.read(4))[0]
         num_cols = struct.unpack(">I", f.read(4))[0]
         assert (num_rows == 28)
         assert (num_cols == 28)
 
-        images = np.empty((num_items, num_rows, num_cols))
-
-        for image_index in range(num_items):
-
-            for row_index in range(num_rows):
-                for col_index in range(num_cols):
-                    images[image_index, row_index, col_index] = f.read(1)[0]
+        images = np.reshape(np.fromfile(f,
+                                        dtype=np.dtype('u1'),
+                                        count=num_images * num_rows * num_cols,
+                                        offset=0),
+                            (num_images, num_rows, num_cols))
 
         return images
 
@@ -74,7 +70,7 @@ if __name__ == '__main__':
     images = _read_images(TEST_IMAGES)
     import matplotlib.pyplot as plt
 
-    plt.imshow(images[0])
+    plt.imshow(images[0], cmap=plt.cm.binary)
     plt.show()
     plt.imshow(images[1])
     plt.show()
